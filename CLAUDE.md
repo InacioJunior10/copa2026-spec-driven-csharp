@@ -240,3 +240,4 @@ Para cada interação neste projeto vamos gerenciar a memoria utilizando a pasta
 * Dentro desta pasta cada prompt utilizado deverá ser criado um arquivo markdown na pasta /prompt com o prompt exato do usuário. O arquivo deverá ser nomeado com um {título referente ao prompt} + "-" + {data/hora}
 * Para cada resultado deverá ser gravado o resumo do que foi feito na pasta /result. O arquivo deverá ser nomeado com o {título do prompt} + "-result" + "-" + {data/hora}
 * A pasta /agents deverá ser gravada memorias que podem ser compartilhadas por sub-agents quando necessário para seções compartilhadas.
+* Todas as interações com o openspec, salvar apenas o prompt e resumo do result. Não precisa registrar todo o histórico do openspec.
