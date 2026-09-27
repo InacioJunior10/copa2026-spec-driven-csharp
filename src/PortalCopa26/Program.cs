@@ -11,6 +11,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddPortalCopaData(builder.Configuration);
+builder.Services.AddLandingPageServices();
 
 var app = builder.Build();
 

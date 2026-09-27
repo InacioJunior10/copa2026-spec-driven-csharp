@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PortalCopa26.Data;
+using PortalCopa26.Services;
+using PortalCopa26.Services.Charts;
 
 namespace PortalCopa26.Extensions;
 
@@ -16,6 +18,15 @@ public static class ServiceCollectionExtensions
             ?? throw new InvalidOperationException("Connection string 'PortalCopa26' não configurada.");
 
         services.AddDbContextFactory<AppDbContext>(options => options.UseSqlite(connectionString));
+
+        return services;
+    }
+
+    /// <summary>Registra os serviços de acesso a dados consumidos pela Landing Page.</summary>
+    public static IServiceCollection AddLandingPageServices(this IServiceCollection services)
+    {
+        services.AddScoped<ILandingPageService, LandingPageService>();
+        services.AddScoped<IChartInterop, ChartInterop>();
 
         return services;
     }

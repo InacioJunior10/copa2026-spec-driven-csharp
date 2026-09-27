@@ -7,9 +7,10 @@ namespace PortalCopa26.Tests.Data;
 /// <summary>
 /// D10: SQLite in-memory com a conexão mantida aberta, para que as constraints
 /// reais (FK, índice único, CHECK) sejam aplicadas — ao contrário do provider
-/// InMemory do EF.
+/// InMemory do EF. Também funciona como <see cref="IDbContextFactory{AppDbContext}"/>
+/// para testar serviços que dependem dessa fábrica (ex.: <c>LandingPageService</c>).
 /// </summary>
-public sealed class SqliteInMemoryFixture : IDisposable
+public sealed class SqliteInMemoryFixture : IDbContextFactory<AppDbContext>, IDisposable
 {
     private readonly SqliteConnection _connection;
 
@@ -30,6 +31,11 @@ public sealed class SqliteInMemoryFixture : IDisposable
 
         return new AppDbContext(options);
     }
+
+    public AppDbContext CreateDbContext() => CreateContext();
+
+    public Task<AppDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(CreateContext());
 
     public void Dispose() => _connection.Dispose();
 }

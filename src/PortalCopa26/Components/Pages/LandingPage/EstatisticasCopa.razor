@@ -1,0 +1,47 @@
+@using PortalCopa26.Services
+@using EstatisticasCopaDto = PortalCopa26.Services.EstatisticasCopa
+@inject ILandingPageService LandingPageService
+
+@* Estatísticas gerais da Copa, vindas do banco (D4: sem entidade Estádio, contagem via DISTINCT Jogo.Estadio). *@
+@if (_estatisticas is not null)
+{
+    <div class="stat-strip" id="stats">
+        <div class="stat-card">
+            <div class="stat-icon blue">🏆</div>
+            <div>
+                <div class="stat-val">@_estatisticas.Selecoes</div>
+                <div class="stat-lbl">Seleções</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon gold">📊</div>
+            <div>
+                <div class="stat-val">@_estatisticas.Grupos</div>
+                <div class="stat-lbl">Grupos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">⚽</div>
+            <div>
+                <div class="stat-val">@_estatisticas.Jogos</div>
+                <div class="stat-lbl">Jogos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red">🌍</div>
+            <div>
+                <div class="stat-val">@_estatisticas.Estadios</div>
+                <div class="stat-lbl">Estádios</div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private EstatisticasCopaDto? _estatisticas;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _estatisticas = await LandingPageService.GetEstatisticasAsync();
+    }
+}

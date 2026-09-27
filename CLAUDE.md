@@ -92,6 +92,10 @@ Exibir as principais seleções do ranking.
 
 Botão para acesso ao simulador.
 
+### Estatísticas da Copa
+
+Exibir números gerais da competição (seleções, grupos, jogos, estádios), calculados a partir dos dados persistidos. Adicionado durante a change `landing-page` (`openspec/changes/archive/`), a partir do protótipo, que já exibia essa seção na Home.
+
 ---
 
 ## 6. Página Jogos
@@ -231,13 +235,3 @@ Possíveis melhorias:
 * Bolão
 * Compartilhamento de simulações
 * Estatísticas avançadas
-
----
-
-## 14. Memory
-
-Para cada interação neste projeto vamos gerenciar a memoria utilizando a pasta ./memory
-* Dentro desta pasta cada prompt utilizado deverá ser criado um arquivo markdown na pasta /prompt com o prompt exato do usuário. O arquivo deverá ser nomeado com um {título referente ao prompt} + "-" + {data/hora}
-* Para cada resultado deverá ser gravado o resumo do que foi feito na pasta /result. O arquivo deverá ser nomeado com o {título do prompt} + "-result" + "-" + {data/hora}
-* A pasta /agents deverá ser gravada memorias que podem ser compartilhadas por sub-agents quando necessário para seções compartilhadas.
-* Todas as interações com o openspec, salvar apenas o prompt e resumo do result. Não precisa registrar todo o histórico do openspec.
