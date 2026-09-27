@@ -1,0 +1,1 @@
+Neste projeto eu quero que você crie uma skill de commit que gere a descrição resumida do commit de acordo com o que foi realizado na branch. Quero que a skill utilize o padrão de conventional commits.
