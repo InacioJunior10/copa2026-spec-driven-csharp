@@ -1,0 +1,55 @@
+@rendermode InteractiveServer
+@using PortalCopa26.Services
+@using PortalCopa26.Services.Charts
+@inject ILandingPageService LandingPageService
+@inject IChartInterop ChartInterop
+
+@* D5: usa o wrapper genérico de Chart.js (IChartInterop), não uma função só de ranking. *@
+<section class="section" style="margin-bottom:0">
+    <div class="section-header">
+        <h2 class="section-title">Ranking FIFA</h2>
+        <a href="/ranking" class="btn btn-outline btn-sm">Ranking completo</a>
+    </div>
+    <div class="card" style="padding:1.25rem 1rem 1rem">
+        <div style="position:relative;height:340px">
+            <canvas id="@_canvasId"></canvas>
+        </div>
+    </div>
+</section>
+
+@code {
+    private readonly string _canvasId = $"ranking-chart-{Guid.NewGuid():N}";
+    private List<RankingItem>? _top10;
+    private bool _graficoRenderizado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _top10 = await LandingPageService.GetTopRankingAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _graficoRenderizado || _top10 is not { Count: > 0 })
+        {
+            return;
+        }
+
+        _graficoRenderizado = true;
+
+        var labels = _top10.Select(r => $"{r.Posicao}. {r.NomeSelecao}").ToList();
+        var pontos = _top10.Select(r => r.Pontos).ToList();
+        var barColors = _top10.Select((_, indice) => indice switch
+        {
+            0 => "#f5a623", // ouro
+            1 => "#adb5c7", // prata
+            2 => "#cd7f32", // bronze
+            _ => "rgba(74,136,220,0.75)",
+        }).ToArray();
+
+        await ChartInterop.RenderBarChartAsync(
+            _canvasId,
+            labels,
+            pontos,
+            new ChartBarOptions(Label: "Pontuação FIFA", BarColors: barColors, MinValue: 1600));
+    }
+}

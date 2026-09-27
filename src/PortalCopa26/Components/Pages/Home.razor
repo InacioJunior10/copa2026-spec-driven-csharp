@@ -1,7 +1,16 @@
-﻿@page "/"
+@page "/"
+@using PortalCopa26.Components.Pages.LandingPage
 
-<PageTitle>Home</PageTitle>
+<PageTitle>PortalCopa26 — Copa do Mundo FIFA 2026</PageTitle>
 
-<h1>Hello, world!</h1>
+<HeroSection />
 
-Welcome to your new app.
+<div class="page">
+    <EstatisticasCopa />
+    <ProximosJogos />
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start" id="rankingGrid">
+        <RankingFifaChart />
+        <SimuladorPainel />
+    </div>
+</div>

@@ -1,0 +1,31 @@
+@* Réplica do menu do protótipo (nav superior + menu mobile), não a sidebar padrão do template Blazor.
+   O link ativo é resolvido pelo próprio <NavLink> (adiciona "active"), sem precisar do JS do protótipo para isso. *@
+<nav class="nav">
+    <NavLink href="" Match="NavLinkMatch.All" class="nav-brand">
+        <img src="https://api.fifa.com/api/v3/picture/tournaments-sq-4/285023" alt="Copa 2026" onerror="this.style.display='none'" />
+        Portal<span class="accent">Copa26</span>
+    </NavLink>
+    <div class="nav-links">
+        <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+        <NavLink href="jogos">Jogos</NavLink>
+        <NavLink href="grupos">Grupos</NavLink>
+        <NavLink href="equipes">Equipes</NavLink>
+        <NavLink href="ranking">Ranking</NavLink>
+        <NavLink href="simulador">Simulador</NavLink>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-badge">⚽ FIFA 2026</div>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+    </button>
+</nav>
+<div class="nav-mobile" id="navMobile">
+    <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+    <NavLink href="jogos">Jogos</NavLink>
+    <NavLink href="grupos">Grupos</NavLink>
+    <NavLink href="equipes">Equipes</NavLink>
+    <NavLink href="ranking">Ranking</NavLink>
+    <NavLink href="simulador">Simulador</NavLink>
+</div>

@@ -1,0 +1,56 @@
+@* Hero estático: logo da Copa, nome do portal, chamadas e países-sede. Sem consulta ao banco.
+   Markup e classes idênticos ao protótipo (section.hero). *@
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-text">
+            <div class="hero-eyebrow"><span></span>Copa do Mundo FIFA</div>
+            <h1 class="hero-title">
+                O Mundo inteiro<br />
+                no seu <span class="accent-gold">portal</span>
+            </h1>
+            <p class="hero-desc">
+                Acompanhe todos os jogos, grupos, seleções e classificação da Copa do Mundo FIFA 2026.
+                Simule resultados e veja como sua seleção chega à final.
+            </p>
+            <div class="hero-actions">
+                <a href="/simulador" class="btn btn-gold btn-lg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z" /></svg>
+                    Abrir Simulador
+                </a>
+                <a href="/jogos" class="btn btn-outline btn-lg">Ver Jogos</a>
+            </div>
+        </div>
+
+        <div class="hero-logo">
+            <img src="https://api.fifa.com/api/v3/picture/tournaments-sq-4/285023"
+                 alt="Copa do Mundo FIFA 2026"
+                 onerror="this.style.display='none'" />
+            <div class="hero-logo-label">FIFA World Cup 2026™</div>
+        </div>
+
+        <div class="hero-flags">
+            @foreach (var sede in PaisesSede)
+            {
+                <div class="host-card">
+                    <img src="@FlagUrl(sede.Codigo)" alt="@sede.Nome" onerror="this.style.background='var(--border)'" />
+                    <div class="host-card-info">
+                        <strong>@sede.Nome</strong>
+                        <span>País Sede · @sede.Estadios estádios</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    // Países-sede da Copa 2026 (fixos — não modelados como entidade no banco).
+    private static readonly (string Nome, string Codigo, int Estadios)[] PaisesSede =
+    [
+        ("Estados Unidos", "USA", 11),
+        ("Canadá", "CAN", 2),
+        ("México", "MEX", 3),
+    ];
+
+    private static string FlagUrl(string codigo) => $"https://api.fifa.com/api/v3/picture/flags-sq-4/{codigo}";
+}
