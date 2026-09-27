@@ -1,237 +1,226 @@
-# PRD - PortalCopa26
+# PortalCopa26
 
-## 1. Visão Geral
+## Projeto
 
-O PortalCopa26 é uma aplicação web voltada para fãs da Copa do Mundo FIFA 2026.
-
-O objetivo é fornecer informações organizadas sobre jogos, grupos, seleções, classificação e ranking FIFA, além de permitir a simulação dos resultados da competição.
-
-A primeira versão será implementada como um protótipo HTML/CSS/JavaScript e posteriormente evoluída para uma aplicação Blazor Web App utilizando .NET 10, EF Core e SQLite.
+Portal informativo da Copa do Mundo 2026 focado em consulta de jogos, grupos, seleções, ranking FIFA e simulação de resultados.
 
 ---
 
-## 2. Objetivos
+## Tecnologias
 
-O sistema deve permitir que o usuário:
-
-* Consultar os jogos da Copa do Mundo 2026
-* Visualizar grupos e classificação
-* Consultar informações das seleções
-* Consultar os elencos das seleções
-* Visualizar o ranking FIFA
-* Simular resultados dos jogos
-* Simular a classificação dos grupos
+- .NET 10
+- Blazor Web App
+- EF Core
+- SQLite
+- Bootstrap 5
+- JSInterop
+- Chart.js
 
 ---
 
-## 3. Público-Alvo
+## Arquitetura
 
-* Fãs de futebol
-* Acompanhantes da Copa do Mundo
-* Usuários interessados em estatísticas e simulações
+A aplicação será desenvolvida inicialmente em um único projeto Blazor Web App.
 
----
+### Organização
 
-## 4. Navegação Principal
+- Pages
+- Components
+- Models
+- Services
+- Data
 
-A aplicação deverá possuir as seguintes páginas:
-
-### Home
-
-Landing page principal.
-
-### Jogos
-
-Exibe todos os jogos da Copa ordenados por data.
-
-### Grupos
-
-Exibe os grupos e a classificação.
-
-### Equipes
-
-Exibe as seleções participantes.
-
-### Ranking
-
-Exibe o ranking FIFA.
-
-### Simulador
-
-Permite simular os resultados dos jogos.
+O código deve ser organizado de forma que permita futura migração para uma arquitetura em camadas sem grandes alterações.
 
 ---
 
-## 5. Página Home
+## Escopo
 
-A Home deverá conter:
+### Capacidades Principais
 
-### Hero Section
-
-* Logo da Copa
-* Nome do portal
-* Países-sede
-
-### Países-Sede
-
-Exibir:
-
-* Canadá
-* Estados Unidos
-* México
-
-### Próximos Jogos
-
-Exibir os próximos jogos da competição.
-
-### Ranking FIFA
-
-Exibir as principais seleções do ranking.
-
-### Chamada para o Simulador
-
-Botão para acesso ao simulador.
-
-### Estatísticas da Copa
-
-Exibir números gerais da competição (seleções, grupos, jogos, estádios), calculados a partir dos dados persistidos. Adicionado durante a change `landing-page` (`openspec/changes/archive/`), a partir do protótipo, que já exibia essa seção na Home.
+- Landing Page
+- Jogos
+- Grupos
+- Seleções
+- Ranking FIFA
+- Simulador
 
 ---
 
-## 6. Página Jogos
+## Organização Funcional
 
-Exibir:
+Cada capacidade deverá possuir:
 
-* Data do jogo
-* Hora
-* Seleção mandante
-* Seleção visitante
-* Grupo
-* Estádio
+- Componentes próprios
+- Serviços próprios
+- Especificações OpenSpec próprias
 
-Recursos:
+Estrutura base:
 
-* Ordenação por data
-* Agrupamento por dia
-
-Link:
-
-* Ver grupos
-
----
-
-## 7. Página Grupos
-
-Exibir os grupos da competição.
-
-Cada grupo deverá apresentar:
-
-* Posição
-* Seleção
-* Jogos
-* Vitórias
-* Empates
-* Derrotas
-* Saldo de gols
-* Pontos
+```text
+Components/Pages/LandingPage
+Components/Pages/Jogos
+Components/Pages/Grupos
+Components/Pages/Selecoes
+Components/Pages/Ranking
+Components/Pages/Simulador
+```
 
 ---
 
-## 8. Página Equipes
+## Serviços
 
-Exibir todas as seleções participantes.
+Não acessar DbContext diretamente em páginas ou componentes Razor.
 
-Ao selecionar uma equipe, exibir:
+Todo acesso aos dados deve ocorrer através de serviços específicos.
 
-* Bandeira
-* Nome
-* Grupo
-* Elenco
+Exemplos:
 
-Cada jogador deverá apresentar:
-
-* Nome
-* Posição
-* Idade
-* Gols marcados
-* Participações em Copas
+- LandingPageService
+- JogosService
+- GruposService
+- RankingService
+- SimuladorService
 
 ---
 
-## 9. Página Ranking
+## Interface
 
-Exibir o ranking FIFA.
+Utilizar Bootstrap 5 como base visual.
 
-Informações:
+Priorizar reutilização dos componentes Bootstrap antes da criação de componentes customizados.
 
-* Posição
-* Seleção
-* Pontuação
+Evitar frameworks CSS adicionais sem necessidade.
 
 ---
 
-## 10. Página Simulador
+## Visualizações e Gráficos
 
-Permitir:
+A Landing Page deverá exibir gráficos utilizando:
 
-* Informar placares
-* Simular resultados
-* Recalcular classificação
+- Chart.js
+- JSInterop
 
-O simulador deverá atualizar:
-
-* Pontuação
-* Saldo de gols
-* Classificação do grupo
+Os componentes de gráficos devem ser reutilizáveis para futuras visualizações estatísticas.
 
 ---
 
-## 11. Fonte dos Dados
+## Persistência
 
-Os dados iniciais serão carregados através de Seed.
+A aplicação utilizará SQLite através do EF Core.
 
-Dados previstos:
+Além dos dados oficiais da Copa, o banco deverá armazenar:
 
-* Seleções
-* Grupos
-* Jogadores
-* Jogos
-* Ranking FIFA
+- Simulações realizadas pelos usuários
+- Resultados simulados dos jogos
+- Classificações geradas a partir das simulações
 
-As bandeiras poderão ser obtidas através da API pública da FIFA.
-
-Exemplo:
-
-https://api.fifa.com/api/v3/picture/flags-sq-4/MEX
-
-O logo da Fifa poderá ser obtida da API da FIFA
-
-Exemplo: 
-
-https://api.fifa.com/api/v3/picture/tournaments-sq-4/285023
+As simulações devem permanecer disponíveis mesmo após o encerramento da aplicação.
 
 ---
 
-## 12. Fora do Escopo
+## Referências
+
+Utilizar sempre caminhos relativos.
+
+Exemplos:
+
+```text
+./fontes
+../prototipo
+```
+
+Evitar caminhos absolutos.
+
+---
+
+## Fora do Escopo
 
 Não fazem parte da primeira versão:
 
-* Área administrativa
-* Cadastro de usuários
-* Login
-* Autenticação
-* Integração automática com APIs esportivas
-* Atualização automática dos resultados
+- Área administrativa
+- Autenticação
+- Autorização
+- Gestão de usuários
+- Integração com APIs externas
+- Atualização automática dos resultados
 
 ---
 
-## 13. Evoluções Futuras
+## Diretrizes de Desenvolvimento
 
-Possíveis melhorias:
+- Utilizar async/await sempre que aplicável
+- Utilizar injeção de dependência nativa do ASP.NET Core
+- Criar componentes Blazor reutilizáveis
+- Evitar duplicação de código
+- Seguir princípios SOLID quando aplicável
+- Utilizar EF Core como mecanismo de persistência
+- Utilizar SQLite como banco de dados local
+- Utilizar JSInterop apenas quando necessário
+- Priorizar legibilidade e manutenção do código
 
-* Área administrativa simplificada
-* Atualização manual de resultados
-* Integração com APIs esportivas
-* Bolão
-* Compartilhamento de simulações
-* Estatísticas avançadas
+---
+
+## Dados Oficiais
+
+Os dados oficiais do torneio estão definidos nos arquivos da pasta:
+
+```text
+./fontes
+```
+
+Arquivos oficiais:
+
+- copa2026_cidades_sede_estadios.txt
+- copa2026_cabecas_chave.txt
+- copa2026_grupos.txt
+- copa2026_jogos_primeira_fase.txt
+- copa2026_regras_negocio.txt
+- copa2026_fases.txt
+
+Ao implementar funcionalidades relacionadas ao torneio:
+
+- Não gerar dados fictícios
+- Não inventar confrontos
+- Não criar grupos não definidos
+- Utilizar exclusivamente os dados da pasta ./fontes
+
+Dados oficiais previstos:
+
+- 48 seleções
+- 12 grupos
+- 16 estádios
+- 6 fases
+- 72 jogos na fase de grupos
+- 102 jogos no total do torneio
+- Ranking FIFA
+
+Bandeiras e logotipos poderão ser obtidos através das APIs públicas da FIFA.
+
+---
+
+## OpenSpec
+
+As mudanças devem:
+
+- Manter escopo reduzido por change
+- Cada change deve possuir um objetivo funcional claro
+- Permitir múltiplas tarefas dentro da mesma change
+- Evitar agrupar capacidades não relacionadas em uma única change
+- Priorizar componentes reutilizáveis
+- Evitar alterações não relacionadas ao objetivo da change
+- Seguir as diretrizes definidas neste documento
+- Utilizar as informações da pasta ./fontes como fonte oficial dos dados do torneio
+
+## Documentação Complementar
+
+Antes de implementar funcionalidades relacionadas ao domínio da Copa, consultar:
+
+- ./docs/RegrasCopa2026.md
+- ./docs/EstruturaDados.md
+
+Antes de utilizar dados do torneio, consultar os arquivos da pasta:
+
+- ./fontes
+
+Os arquivos da pasta fontes são a fonte oficial dos dados da Copa do Mundo 2026.
