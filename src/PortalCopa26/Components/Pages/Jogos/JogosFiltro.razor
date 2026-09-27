@@ -1,0 +1,16 @@
+@* Filtro por grupo via navegação com query string (D2/D6) — sem EventCallback, sem interatividade. *@
+<div class="filters">
+    <a href="/jogos" class="filter-btn @(GrupoSelecionado is null ? "active" : "")">Todos</a>
+    @foreach (var letra in Letras)
+    {
+        <a href="/jogos?grupo=@letra" class="filter-btn @(GrupoSelecionado == letra ? "active" : "")">Grupo @letra</a>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<char> Letras { get; set; } = [];
+
+    [Parameter]
+    public char? GrupoSelecionado { get; set; }
+}

@@ -1,0 +1,59 @@
+@page "/jogos"
+@using PortalCopa26.Services
+@inject IJogosService JogosService
+
+<PageTitle>Jogos — PortalCopa26</PageTitle>
+
+<div class="page">
+    <div class="section">
+        <div class="section-header">
+            <h2 class="section-title">Jogos</h2>
+            <a href="/grupos" class="btn btn-outline btn-sm">Ver Grupos</a>
+        </div>
+
+        <JogosFiltro Letras="_letrasGrupos" GrupoSelecionado="GrupoLetra" />
+
+        @if (_dias is null)
+        {
+            <p class="text-soft">Carregando...</p>
+        }
+        else if (_dias.Count == 0)
+        {
+            <p class="text-soft">Não há jogos para o filtro selecionado.</p>
+        }
+        else
+        {
+            @foreach (var dia in _dias)
+            {
+                <div class="day-group">
+                    <JogosDataHeader Data="dia.Data" QuantidadeJogos="dia.Jogos.Count" />
+                    <div class="game-list">
+                        @foreach (var jogo in dia.Jogos)
+                        {
+                            <JogoCard Jogo="jogo" />
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    // [SupplyParameterFromQuery] não suporta char?/char diretamente (só string, bool, DateTime,
+    // decimal, double, float, Guid, int, long e seus nullable) — a query chega como string e é
+    // convertida para char? aqui.
+    [SupplyParameterFromQuery(Name = "grupo")]
+    public string? Grupo { get; set; }
+
+    private char? GrupoLetra => string.IsNullOrEmpty(Grupo) ? null : char.ToUpperInvariant(Grupo[0]);
+
+    private List<char> _letrasGrupos = [];
+    private List<JogosDia>? _dias;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _letrasGrupos = await JogosService.GetLetrasGruposAsync();
+        _dias = await JogosService.GetJogosAgrupadosPorDiaAsync(GrupoLetra);
+    }
+}

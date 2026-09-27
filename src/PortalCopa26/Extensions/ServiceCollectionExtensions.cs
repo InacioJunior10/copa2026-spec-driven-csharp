@@ -30,4 +30,12 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>Registra os serviços de acesso a dados consumidos pela página Jogos.</summary>
+    public static IServiceCollection AddJogosServices(this IServiceCollection services)
+    {
+        services.AddScoped<IJogosService, JogosService>();
+
+        return services;
+    }
 }
