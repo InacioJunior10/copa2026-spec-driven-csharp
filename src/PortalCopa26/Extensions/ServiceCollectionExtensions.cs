@@ -46,4 +46,12 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>Registra os serviços de acesso a dados consumidos pela página Grupos.</summary>
+    public static IServiceCollection AddGruposServices(this IServiceCollection services)
+    {
+        services.AddScoped<IGruposService, GruposService>();
+
+        return services;
+    }
 }

@@ -68,6 +68,14 @@
 @code {
     private const string CookieVisitante = "pc26_visitante";
 
+    // [SupplyParameterFromQuery] não suporta char?/char diretamente (só string, bool, DateTime,
+    // decimal, double, float, Guid, int, long e seus nullable) — a query chega como string e é
+    // convertida para char? aqui, mesmo padrão de Jogos.razor.
+    [SupplyParameterFromQuery(Name = "grupo")]
+    public string? Grupo { get; set; }
+
+    private char? GrupoLetraDaQuery => string.IsNullOrEmpty(Grupo) ? null : char.ToUpperInvariant(Grupo[0]);
+
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
@@ -100,7 +108,11 @@
         }
 
         _letrasGrupos = (await JogosService.GetLetrasGruposAsync()).ToArray();
-        if (_letrasGrupos.Length > 0 && !_letrasGrupos.Contains(_grupoAtivo))
+        if (GrupoLetraDaQuery is char grupoDaQuery && _letrasGrupos.Contains(grupoDaQuery))
+        {
+            _grupoAtivo = grupoDaQuery;
+        }
+        else if (_letrasGrupos.Length > 0 && !_letrasGrupos.Contains(_grupoAtivo))
         {
             _grupoAtivo = _letrasGrupos[0];
         }
