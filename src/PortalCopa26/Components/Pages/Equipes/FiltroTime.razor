@@ -1,0 +1,36 @@
+<div class="toolbar">
+    <div class="search-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" placeholder="Buscar seleção..." value="@Busca" @oninput="OnBuscaInput" />
+    </div>
+    <div class="filters">
+        <button class="filter-btn @(GrupoFiltro is null ? "active" : "")" @onclick="() => SelecionarGrupoAsync(null)">Todos</button>
+        @foreach (var letra in Letras)
+        {
+            <button class="filter-btn @(GrupoFiltro == letra ? "active" : "")" @onclick="() => SelecionarGrupoAsync(letra)">Grp @letra</button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Busca { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> BuscaChanged { get; set; }
+
+    [Parameter]
+    public char? GrupoFiltro { get; set; }
+
+    [Parameter]
+    public EventCallback<char?> GrupoFiltroChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<char> Letras { get; set; } = [];
+
+    private Task OnBuscaInput(ChangeEventArgs e) => BuscaChanged.InvokeAsync(e.Value?.ToString() ?? string.Empty);
+
+    private Task SelecionarGrupoAsync(char? grupo) => GrupoFiltroChanged.InvokeAsync(grupo);
+}

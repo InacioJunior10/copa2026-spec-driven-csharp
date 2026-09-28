@@ -1,0 +1,17 @@
+@using PortalCopa26.Services
+
+<div class="team-card" @onclick="() => OnSelecionar.InvokeAsync(Equipe.SelecaoId)">
+    <img src="@FlagUrl(Equipe.Codigo)" alt="@Equipe.Nome" />
+    <div class="team-card-name">@Equipe.Nome</div>
+    <div class="team-card-sub">Grupo @Equipe.Grupo · <span class="badge badge-group" style="font-size:0.6rem">@Equipe.Codigo</span></div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public EquipeItem Equipe { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<int> OnSelecionar { get; set; }
+
+    private static string FlagUrl(string codigo) => $"https://api.fifa.com/api/v3/picture/flags-sq-4/{codigo}";
+}

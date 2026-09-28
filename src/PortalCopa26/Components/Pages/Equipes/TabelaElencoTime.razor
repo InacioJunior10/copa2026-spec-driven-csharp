@@ -1,0 +1,51 @@
+@using PortalCopa26.Domain.Enums
+@using PortalCopa26.Services
+
+<div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Jogador</th>
+                <th>Pos.</th>
+                <th class="text-center">Idade</th>
+                <th class="text-center">Gols</th>
+                <th class="text-center">Copas</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var jogador in Jogadores)
+            {
+                <tr>
+                    <td>@jogador.Nome</td>
+                    <td><span class="pos @PosClass(jogador.Posicao)">@PosLabel(jogador.Posicao)</span></td>
+                    <td class="text-center">@jogador.Idade</td>
+                    <td class="text-center fw-7" style="color:var(--gold)">@jogador.Gols</td>
+                    <td class="text-center">@jogador.ParticipacoesCopas</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<EquipeJogadorItem> Jogadores { get; set; } = [];
+
+    private static string PosClass(PosicaoJogador posicao) => posicao switch
+    {
+        PosicaoJogador.Goleiro => "pos-gk",
+        PosicaoJogador.Defensor => "pos-df",
+        PosicaoJogador.MeioCampista => "pos-mf",
+        PosicaoJogador.Atacante => "pos-at",
+        _ => "",
+    };
+
+    private static string PosLabel(PosicaoJogador posicao) => posicao switch
+    {
+        PosicaoJogador.Goleiro => "GK",
+        PosicaoJogador.Defensor => "DF",
+        PosicaoJogador.MeioCampista => "MF",
+        PosicaoJogador.Atacante => "AT",
+        _ => "",
+    };
+}

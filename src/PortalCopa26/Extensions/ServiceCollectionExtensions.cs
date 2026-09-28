@@ -54,4 +54,12 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>Registra os serviços de acesso a dados consumidos pela página Equipes.</summary>
+    public static IServiceCollection AddEquipesServices(this IServiceCollection services)
+    {
+        services.AddScoped<ISelecaoService, SelecaoService>();
+
+        return services;
+    }
 }
