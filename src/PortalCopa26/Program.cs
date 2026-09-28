@@ -12,6 +12,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddPortalCopaData(builder.Configuration);
 builder.Services.AddLandingPageServices();
+builder.Services.AddJogosServices();
+builder.Services.AddSimuladorServices();
 
 var app = builder.Build();
 

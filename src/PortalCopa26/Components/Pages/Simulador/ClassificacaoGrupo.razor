@@ -1,0 +1,65 @@
+@using PortalCopa26.Services
+
+@* Tabela Bootstrap responsiva (D6); tema escuro via variáveis --bs-table-* sobrescritas em app.css. *@
+<div class="card">
+    <div class="card-header">
+        <h3>Classificação simulada — Grupo @Grupo</h3>
+        <div class="fs-xs flex items-c gap-1">
+            <span style="width:8px;height:8px;background:var(--green);border-radius:2px"></span> Classifica
+            <span style="width:8px;height:8px;background:var(--gold);border-radius:2px;margin-left:6px"></span> Wildcard
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Seleção</th>
+                    <th class="text-center">J</th>
+                    <th class="text-center" style="color:var(--green)">V</th>
+                    <th class="text-center">E</th>
+                    <th class="text-center" style="color:var(--red)">D</th>
+                    <th class="text-center">SG</th>
+                    <th class="text-center">Pts</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Classificacao)
+                {
+                    <tr>
+                        <td class="t-pos @DestaquePosicao(item.Posicao)">@item.Posicao</td>
+                        <td>
+                            <div class="t-flag-row">
+                                <img src="@FlagUrl(item.SelecaoCodigo)" alt="@item.SelecaoNome" class="flag-xs" />
+                                @item.SelecaoNome
+                            </div>
+                        </td>
+                        <td class="text-center">@item.Jogos</td>
+                        <td class="text-center" style="color:var(--green)">@item.Vitorias</td>
+                        <td class="text-center">@item.Empates</td>
+                        <td class="text-center" style="color:var(--red)">@item.Derrotas</td>
+                        <td class="text-center">@(item.SaldoGols > 0 ? $"+{item.SaldoGols}" : item.SaldoGols)</td>
+                        <td class="text-center t-pts">@item.Pontos</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public char Grupo { get; set; }
+
+    [Parameter, EditorRequired]
+    public List<ClassificacaoItem> Classificacao { get; set; } = [];
+
+    private static string DestaquePosicao(int posicao) => posicao switch
+    {
+        1 or 2 => "qualify",
+        3 => "playoff",
+        _ => "",
+    };
+
+    private static string FlagUrl(string codigo) => $"https://api.fifa.com/api/v3/picture/flags-sq-4/{codigo}";
+}

@@ -1,0 +1,33 @@
+@using PortalCopa26.Services
+
+@* Seleções do grupo ativo + posição no ranking FIFA (equivalente ao card "Seleções do Grupo" do protótipo). *@
+<div class="card mt-2">
+    <div class="card-header"><h3>Seleções do Grupo @Grupo</h3></div>
+    <div class="card-body" style="padding:0.75rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+            @foreach (var selecao in Selecoes)
+            {
+                <div style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem;background:var(--card-alt);border-radius:6px">
+                    <img src="@FlagUrl(selecao.Codigo)" alt="@selecao.Nome" class="flag-xs" />
+                    <div>
+                        <div class="fs-sm fw-7">@selecao.Nome</div>
+                        @if (selecao.RankingPosicao is not null)
+                        {
+                            <div class="fs-xs text-soft">Ranking #@selecao.RankingPosicao</div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public char Grupo { get; set; }
+
+    [Parameter, EditorRequired]
+    public List<SelecaoResumoItem> Selecoes { get; set; } = [];
+
+    private static string FlagUrl(string codigo) => $"https://api.fifa.com/api/v3/picture/flags-sq-4/{codigo}";
+}

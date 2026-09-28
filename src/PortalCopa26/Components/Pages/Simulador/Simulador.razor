@@ -1,0 +1,185 @@
+@page "/simulador"
+@rendermode InteractiveServer
+@implements IDisposable
+@using Microsoft.AspNetCore.Http
+@using PortalCopa26.Services
+@inject ISimuladorService SimuladorService
+@inject IJogosService JogosService
+@inject PersistentComponentState ApplicationState
+
+<PageTitle>Simulador — PortalCopa26</PageTitle>
+
+<div class="page">
+    <div class="page-header">
+        <h1>Simulador</h1>
+        <p>Informe os placares dos jogos e veja a classificação atualizada em tempo real</p>
+    </div>
+
+    <div class="card mb-3" style="border-color:rgba(0,100,200,0.3);background:rgba(0,100,200,0.06)">
+        <div class="card-body" style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem">
+            <div style="font-size:1.4rem;line-height:1">💡</div>
+            <div>
+                <div class="fw-7 fs-sm">Como usar o simulador</div>
+                <p class="fs-xs text-soft mt-05">
+                    Digite os placares nos campos de cada jogo. A classificação do grupo será recalculada automaticamente.
+                    Use <strong>Limpar Grupo</strong> para zerar os resultados ou <strong>Limpar Tudo</strong> para reiniciar toda a simulação.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    @if (_progresso is { } progresso)
+    {
+        var percentual = progresso.TotalJogos == 0 ? 0 : (int)Math.Round(progresso.JogosSimulados * 100.0 / progresso.TotalJogos);
+        <div class="sim-progress mb-3">
+            <span class="sim-progress-label"><strong>@progresso.JogosSimulados</strong> de <strong>@progresso.TotalJogos</strong> jogos simulados</span>
+            <div class="sim-progress-track">
+                <div class="sim-progress-fill" style="width:@(percentual)%"></div>
+            </div>
+            <span class="sim-progress-pct">@(percentual)%</span>
+        </div>
+    }
+
+    <div class="toolbar" style="margin-bottom:1.5rem">
+        <div class="group-tabs">
+            @foreach (var letra in _letrasGrupos)
+            {
+                <button class="gtab @(letra == _grupoAtivo ? "active" : "")" @onclick="() => SelecionarGrupoAsync(letra)">
+                    Grupo @letra
+                </button>
+            }
+        </div>
+        <div class="flex gap-1">
+            <button class="btn btn-outline btn-sm" @onclick="LimparGrupoAsync">Limpar Grupo</button>
+            <button class="btn btn-outline btn-sm" @onclick="LimparTudoAsync">Limpar Tudo</button>
+        </div>
+    </div>
+
+    @if (_dados is null)
+    {
+        <p class="text-soft">Carregando...</p>
+    }
+    else
+    {
+        <SimuladorGrupo Dados="_dados" OnPlacarAlterado="OnPlacarAlteradoAsync" />
+    }
+</div>
+
+@code {
+    private const string CookieVisitante = "pc26_visitante";
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    // D4: HttpContext só existe na passagem de renderização estática (antes do circuito interativo assumir).
+    // O VisitanteId lido/gerado nessa passagem é propagado para a instância interativa via
+    // PersistentComponentState (RegisterOnPersisting/TryTakeFromJson) — a instância interativa não tem
+    // HttpContext, então não pode ler o cookie de novo, só recuperar o valor já persistido.
+    private Guid _visitanteId;
+    private PersistingComponentStateSubscription _subscription;
+
+    private char[] _letrasGrupos = [];
+    private char _grupoAtivo = 'A';
+    private SimulacaoGrupo? _dados;
+    private ProgressoSimulacao? _progresso;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContext is not null)
+        {
+            _visitanteId = ObterOuCriarVisitanteId(HttpContext);
+            _subscription = ApplicationState.RegisterOnPersisting(() =>
+            {
+                ApplicationState.PersistAsJson(nameof(_visitanteId), _visitanteId);
+                return Task.CompletedTask;
+            });
+        }
+        else if (ApplicationState.TryTakeFromJson<Guid>(nameof(_visitanteId), out var visitanteIdRestaurado))
+        {
+            _visitanteId = visitanteIdRestaurado;
+        }
+
+        _letrasGrupos = (await JogosService.GetLetrasGruposAsync()).ToArray();
+        if (_letrasGrupos.Length > 0 && !_letrasGrupos.Contains(_grupoAtivo))
+        {
+            _grupoAtivo = _letrasGrupos[0];
+        }
+
+        await CarregarGrupoAsync();
+        await CarregarProgressoAsync();
+    }
+
+    private async Task CarregarGrupoAsync()
+    {
+        _dados = await SimuladorService.GetGrupoSimuladoAsync(_visitanteId, _grupoAtivo);
+    }
+
+    private async Task CarregarProgressoAsync()
+    {
+        _progresso = await SimuladorService.GetProgressoAsync(_visitanteId);
+    }
+
+    private async Task SelecionarGrupoAsync(char grupo)
+    {
+        _grupoAtivo = grupo;
+        await CarregarGrupoAsync();
+    }
+
+    private async Task OnPlacarAlteradoAsync((int JogoId, int? GolsMandante, int? GolsVisitante) placar)
+    {
+        if (placar.GolsMandante is int golsMandante && placar.GolsVisitante is int golsVisitante)
+        {
+            await SimuladorService.SalvarPlacarAsync(_visitanteId, placar.JogoId, golsMandante, golsVisitante);
+            await CarregarGrupoAsync();
+            await CarregarProgressoAsync();
+            return;
+        }
+
+        // Só um dos dois campos foi preenchido até agora (o visitante ainda está digitando o outro lado).
+        // SimulacaoJogo exige os dois placares (não são anuláveis), então não há nada para persistir
+        // ainda — só removemos/recarregamos se já existia um placar completo para este jogo, senão
+        // recarregar aqui reatribuiria o Jogo (ainda sem placar) e apagaria o dígito que acabou de ser
+        // digitado no outro campo antes mesmo do visitante terminar de preenchê-lo.
+        var jogoAtual = _dados?.Jogos.FirstOrDefault(j => j.JogoId == placar.JogoId);
+        var tinhaPlacarCompleto = jogoAtual is { GolsMandante: not null, GolsVisitante: not null };
+        if (tinhaPlacarCompleto)
+        {
+            await SimuladorService.RemoverPlacarAsync(_visitanteId, placar.JogoId);
+            await CarregarGrupoAsync();
+            await CarregarProgressoAsync();
+        }
+    }
+
+    private async Task LimparGrupoAsync()
+    {
+        await SimuladorService.LimparGrupoAsync(_visitanteId, _grupoAtivo);
+        await CarregarGrupoAsync();
+        await CarregarProgressoAsync();
+    }
+
+    private async Task LimparTudoAsync()
+    {
+        await SimuladorService.LimparTudoAsync(_visitanteId);
+        await CarregarGrupoAsync();
+        await CarregarProgressoAsync();
+    }
+
+    private static Guid ObterOuCriarVisitanteId(HttpContext httpContext)
+    {
+        if (httpContext.Request.Cookies.TryGetValue(CookieVisitante, out var valor) && Guid.TryParse(valor, out var visitanteId))
+        {
+            return visitanteId;
+        }
+
+        var novoId = Guid.NewGuid();
+        httpContext.Response.Cookies.Append(CookieVisitante, novoId.ToString(), new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddYears(1),
+        });
+        return novoId;
+    }
+
+    public void Dispose() => _subscription.Dispose();
+}

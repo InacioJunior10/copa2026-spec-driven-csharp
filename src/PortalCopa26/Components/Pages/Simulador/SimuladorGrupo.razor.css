@@ -1,0 +1,14 @@
+/* Mesmo layout do protótipo (#simGrid: grid-template-columns:1fr 1fr) — .sim-grid de site.css
+   usa auto-fill/minmax e, com só 2 filhos, deixa uma coluna implícita vazia em telas largas. */
+.simulador-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .simulador-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,56 @@
+@using PortalCopa26.Services
+
+@* Card de um jogo, reaproveitando as classes vendorizadas do protótipo (mesmas de ProximosJogos.razor). *@
+<div class="game-card">
+    <div class="team-side">
+        @if (Jogo.MandanteCodigo is not null)
+        {
+            <img src="@FlagUrl(Jogo.MandanteCodigo)" alt="@Jogo.MandanteNome" class="flag-sm" />
+            <div>
+                <div class="team-name">@Jogo.MandanteNome</div>
+                <div class="team-code">@Jogo.MandanteCodigo</div>
+            </div>
+        }
+        else
+        {
+            <div class="team-name text-soft">@Jogo.VagaMandante</div>
+        }
+    </div>
+    <div class="game-center">
+        <div class="game-score">@FormatarPlacar()</div>
+        <div class="game-time">
+            @Jogo.DataHora.ToString("HH:mm")
+            @if (Jogo.GrupoLetra is not null)
+            {
+                <span class="badge badge-group" style="margin-left:4px">Grp @Jogo.GrupoLetra</span>
+            }
+        </div>
+        <div class="game-meta">@Jogo.Estadio · @Jogo.Cidade</div>
+    </div>
+    <div class="team-side away">
+        @if (Jogo.VisitanteCodigo is not null)
+        {
+            <img src="@FlagUrl(Jogo.VisitanteCodigo)" alt="@Jogo.VisitanteNome" class="flag-sm" />
+            <div>
+                <div class="team-name">@Jogo.VisitanteNome</div>
+                <div class="team-code">@Jogo.VisitanteCodigo</div>
+            </div>
+        }
+        else
+        {
+            <div class="team-name text-soft">@Jogo.VagaVisitante</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public JogoItem Jogo { get; set; } = null!;
+
+    private static string FlagUrl(string codigo) => $"https://api.fifa.com/api/v3/picture/flags-sq-4/{codigo}";
+
+    private string FormatarPlacar() =>
+        Jogo.GolsMandante is not null && Jogo.GolsVisitante is not null
+            ? $"{Jogo.GolsMandante} : {Jogo.GolsVisitante}"
+            : "— : —";
+}

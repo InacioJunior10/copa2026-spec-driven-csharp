@@ -58,3 +58,31 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Bootstrap's .card define color: var(--bs-body-color) diretamente (não via variável vazia
+   sobrescrevível), e site.css define seu próprio .card só com background/border, sem color —
+   por isso títulos e textos dentro de .card (ex.: "Classificação simulada — Grupo A",
+   "Seleções do Grupo A", nomes das seleções, título do card de instruções) herdavam o cinza
+   escuro padrão do Bootstrap em vez do branco do tema escuro do portal. */
+.card {
+    color: var(--txt);
+}
+
+/* Sobrescreve as variáveis de tema claro do Bootstrap para as tabelas usarem a paleta escura
+   do portal (definida em site.css) — sem isso, .table/.table-hover renderizam com fundo claro. */
+.table {
+    --bs-table-bg: var(--card);
+    --bs-table-color: var(--txt);
+    --bs-table-hover-bg: var(--card-alt);
+    --bs-table-hover-color: var(--txt);
+    --bs-table-border-color: var(--border);
+    --bs-table-striped-bg: var(--card-alt);
+    --bs-table-striped-color: var(--txt);
+    color: var(--txt);
+}
+
+/* Garante que os cabeçalhos da tabela (labels como #, Seleção, J, SG, Pts) fiquem em branco
+   para leitura, independente de qualquer color/opacity padrão do Bootstrap para <th>. */
+.table > thead th {
+    color: var(--txt);
+}
