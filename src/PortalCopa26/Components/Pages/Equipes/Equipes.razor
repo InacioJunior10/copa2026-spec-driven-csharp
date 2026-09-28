@@ -1,0 +1,88 @@
+@page "/equipes"
+@rendermode InteractiveServer
+@using PortalCopa26.Services
+@inject ISelecaoService SelecaoService
+
+<PageTitle>Equipes — PortalCopa26</PageTitle>
+
+<div class="page" tabindex="-1" @onkeydown="OnPageKeyDownAsync">
+    <div class="page-header">
+        <h1>Equipes</h1>
+        <p>48 seleções participantes da Copa do Mundo FIFA 2026</p>
+    </div>
+
+    <FiltroTime Busca="@_busca" BuscaChanged="OnBuscaChanged" GrupoFiltro="_grupoFiltro" GrupoFiltroChanged="OnGrupoFiltroChanged" Letras="LetrasGrupos" />
+
+    @if (EquipesFiltradas.Count == 0)
+    {
+        <p style="color:var(--txt-muted);padding:2rem 0">Nenhuma seleção encontrada.</p>
+    }
+    else
+    {
+        <div class="team-grid">
+            @foreach (var equipe in EquipesFiltradas)
+            {
+                <CartaoTime @key="equipe.SelecaoId" Equipe="equipe" OnSelecionar="AbrirModalAsync" />
+            }
+        </div>
+    }
+</div>
+
+<ModalTime Equipe="EquipeAberta" OnFechar="FecharModalAsync" />
+
+@code {
+    private List<EquipeItem> _equipes = [];
+    private string _busca = string.Empty;
+    private char? _grupoFiltro;
+    private int? _selecaoAbertaId;
+
+    private char[] LetrasGrupos => _equipes.Select(e => e.Grupo).Distinct().OrderBy(letra => letra).ToArray();
+
+    private List<EquipeItem> EquipesFiltradas => _equipes
+        .Where(e => _grupoFiltro is null || e.Grupo == _grupoFiltro)
+        .Where(e => string.IsNullOrWhiteSpace(_busca)
+            || e.Nome.Contains(_busca, StringComparison.OrdinalIgnoreCase)
+            || e.Codigo.Contains(_busca, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    private EquipeItem? EquipeAberta => _selecaoAbertaId is int id ? _equipes.FirstOrDefault(e => e.SelecaoId == id) : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _equipes = await SelecaoService.GetEquipesAsync();
+    }
+
+    private Task OnBuscaChanged(string busca)
+    {
+        _busca = busca;
+        return Task.CompletedTask;
+    }
+
+    private Task OnGrupoFiltroChanged(char? grupo)
+    {
+        _grupoFiltro = grupo;
+        return Task.CompletedTask;
+    }
+
+    private Task AbrirModalAsync(int selecaoId)
+    {
+        _selecaoAbertaId = selecaoId;
+        return Task.CompletedTask;
+    }
+
+    private Task FecharModalAsync()
+    {
+        _selecaoAbertaId = null;
+        return Task.CompletedTask;
+    }
+
+    private Task OnPageKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            _selecaoAbertaId = null;
+        }
+
+        return Task.CompletedTask;
+    }
+}

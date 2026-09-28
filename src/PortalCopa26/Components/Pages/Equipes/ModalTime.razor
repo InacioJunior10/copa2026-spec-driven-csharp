@@ -1,0 +1,43 @@
+@using PortalCopa26.Services
+
+<div class="modal-overlay @(Equipe is not null ? "open" : "")" @onclick="() => OnFechar.InvokeAsync()">
+    @if (Equipe is not null)
+    {
+        @* style inline necessário: o Bootstrap 5 também define ".modal" ("display: none" e "position: fixed",
+           só reexibido via sua própria API JS de modal), colidindo com a classe ".modal" do protótipo em
+           site.css — o "position: fixed" do Bootstrap tirava a caixa do fluxo flex do overlay, ancorando-a
+           no canto superior esquerdo em vez de centralizada. O estilo inline vence a cascata sem precisar
+           renomear a classe reutilizada. *@
+        <div class="modal" style="display:block;position:relative" @onclick:stopPropagation="true">
+            <div class="modal-head">
+                <img src="@FlagUrl(Equipe.Codigo)" alt="@Equipe.Nome" />
+                <div>
+                    <h2>@Equipe.Nome</h2>
+                    <div class="sub">@Subtitulo(Equipe)</div>
+                </div>
+                <button class="modal-close" aria-label="Fechar" @onclick="() => OnFechar.InvokeAsync()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <TabelaElencoTime Jogadores="Equipe.Jogadores" />
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EquipeItem? Equipe { get; set; }
+
+    [Parameter]
+    public EventCallback OnFechar { get; set; }
+
+    private static string Subtitulo(EquipeItem equipe) => equipe.RankingPosicao is int posicao
+        ? $"Grupo {equipe.Grupo} · Técnico: {equipe.Tecnico} · Ranking FIFA #{posicao}"
+        : $"Grupo {equipe.Grupo} · Técnico: {equipe.Tecnico}";
+
+    private static string FlagUrl(string codigo) => $"https://api.fifa.com/api/v3/picture/flags-sq-4/{codigo}";
+}

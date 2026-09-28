@@ -15,6 +15,7 @@ builder.Services.AddLandingPageServices();
 builder.Services.AddJogosServices();
 builder.Services.AddSimuladorServices();
 builder.Services.AddGruposServices();
+builder.Services.AddEquipesServices();
 
 var app = builder.Build();
 
