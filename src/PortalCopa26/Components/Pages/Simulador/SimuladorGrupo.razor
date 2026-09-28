@@ -1,0 +1,26 @@
+@using PortalCopa26.Services
+
+@* Painel do grupo ativo: jogos à esquerda, classificação + resumo à direita (2 colunas, como no
+   protótipo — .sim-grid de site.css usa auto-fill e deixa espaço vazio com só 2 filhos). *@
+<div class="simulador-grid">
+    <div class="sim-card">
+        <div class="sim-card-head">Grupo @Dados.Grupo — Placares</div>
+        @foreach (var jogo in Dados.Jogos)
+        {
+            <SimuladorJogo @key="jogo.JogoId" Jogo="jogo" OnPlacarAlterado="OnPlacarAlterado" />
+        }
+    </div>
+
+    <div>
+        <ClassificacaoGrupo Grupo="Dados.Grupo" Classificacao="Dados.Classificacao" />
+        <SimuladorResumo Grupo="Dados.Grupo" Selecoes="Dados.Selecoes" />
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public SimulacaoGrupo Dados { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<(int JogoId, int? GolsMandante, int? GolsVisitante)> OnPlacarAlterado { get; set; }
+}

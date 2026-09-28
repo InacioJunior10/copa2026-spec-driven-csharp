@@ -38,4 +38,12 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>Registra os serviços de acesso a dados consumidos pela página Simulador.</summary>
+    public static IServiceCollection AddSimuladorServices(this IServiceCollection services)
+    {
+        services.AddScoped<ISimuladorService, SimuladorService>();
+
+        return services;
+    }
 }

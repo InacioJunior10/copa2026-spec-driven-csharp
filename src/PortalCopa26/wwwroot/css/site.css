@@ -533,6 +533,29 @@ tbody td { padding: 0.68rem 0.85rem; vertical-align: middle; }
   margin-bottom: 2rem;
 }
 
+.sim-progress {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 0.85rem 1.25rem;
+}
+.sim-progress-label { font-size: 0.85rem; color: var(--txt-soft); white-space: nowrap; }
+.sim-progress-track {
+  flex: 1; height: 8px;
+  background: var(--surface); border-radius: 999px;
+  overflow: hidden;
+}
+.sim-progress-fill {
+  height: 100%; background: var(--green); border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.sim-progress-pct { font-size: 0.85rem; font-weight: 700; color: var(--txt); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .sim-progress { flex-wrap: wrap; }
+  .sim-progress-track { order: 3; flex-basis: 100%; }
+}
+
 /* ============================================================
    FILTERS / SEARCH
    ============================================================ */
