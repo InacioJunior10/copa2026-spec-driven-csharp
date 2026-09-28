@@ -2,6 +2,19 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+/* Rodapé fixo embaixo da página: body vira coluna flex com pelo menos a altura da viewport, e o
+   conteúdo principal ocupa o espaço restante, empurrando o Footer para o fim mesmo em páginas com
+   pouco conteúdo (site.css não define isso — NavBar/@Body/Footer eram apenas blocos empilhados). */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1 0 auto;
+}
+
 a, .btn-link {
     color: #006bb7;
 }

@@ -1,0 +1,88 @@
+@using PortalCopa26.Services
+
+@* Linha de um jogo com os dois campos de placar oficial, mesmo padrão visual/comportamento de
+   SimuladorJogo.razor (.sim-game/.sim-team/.sim-inputs/.sim-input/.sim-sep): sem botão "Salvar",
+   dispara o evento assim que os dois campos ficam preenchidos, e ao esvaziar volta a "sem placar". *@
+<div class="sim-game">
+    <div class="sim-team">
+        @if (Jogo.MandanteCodigo is not null)
+        {
+            <img src="@FlagUrl(Jogo.MandanteCodigo)" alt="@Jogo.MandanteNome" class="flag-xs" />
+            <span>@Jogo.MandanteNome</span>
+        }
+        else
+        {
+            <span class="text-soft">@Jogo.VagaMandante</span>
+        }
+    </div>
+    <div class="d-flex flex-column align-items-center">
+        <div class="sim-inputs">
+            <input type="number" min="0" max="30" class="sim-input" placeholder="—"
+                   value="@_golsMandante" @oninput="OnGolsMandanteInput" />
+            <span class="sim-sep">:</span>
+            <input type="number" min="0" max="30" class="sim-input" placeholder="—"
+                   value="@_golsVisitante" @oninput="OnGolsVisitanteInput" />
+        </div>
+        <div class="fs-xs text-soft mt-05">@Jogo.DataHora.ToString("dd/MM/yyyy") · @Jogo.DataHora.ToString("HH:mm")</div>
+    </div>
+    <div class="sim-team r">
+        @if (Jogo.VisitanteCodigo is not null)
+        {
+            <span>@Jogo.VisitanteNome</span>
+            <img src="@FlagUrl(Jogo.VisitanteCodigo)" alt="@Jogo.VisitanteNome" class="flag-xs" />
+        }
+        else
+        {
+            <span class="text-soft">@Jogo.VagaVisitante</span>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public JogoItem Jogo { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<(int JogoId, int? GolsMandante, int? GolsVisitante)> OnPlacarAlterado { get; set; }
+
+    private int? _golsMandante;
+    private int? _golsVisitante;
+
+    // Mesmo racional de SimuladorJogo.razor: só resincroniza os campos locais quando o valor vindo
+    // do servidor (Jogo) realmente mudou, para não apagar um lado que o usuário acabou de digitar
+    // enquanto ainda preenche o outro (EventCallback.InvokeAsync sempre re-renderiza o pai).
+    private bool _sincronizado;
+    private int? _ultimoGolsMandanteDoServidor;
+    private int? _ultimoGolsVisitanteDoServidor;
+
+    protected override void OnParametersSet()
+    {
+        if (!_sincronizado || Jogo.GolsMandante != _ultimoGolsMandanteDoServidor || Jogo.GolsVisitante != _ultimoGolsVisitanteDoServidor)
+        {
+            _golsMandante = Jogo.GolsMandante;
+            _golsVisitante = Jogo.GolsVisitante;
+            _ultimoGolsMandanteDoServidor = Jogo.GolsMandante;
+            _ultimoGolsVisitanteDoServidor = Jogo.GolsVisitante;
+            _sincronizado = true;
+        }
+    }
+
+    private Task OnGolsMandanteInput(ChangeEventArgs e)
+    {
+        _golsMandante = ParseGols(e.Value?.ToString());
+        return Notificar();
+    }
+
+    private Task OnGolsVisitanteInput(ChangeEventArgs e)
+    {
+        _golsVisitante = ParseGols(e.Value?.ToString());
+        return Notificar();
+    }
+
+    private static int? ParseGols(string? valor) =>
+        string.IsNullOrWhiteSpace(valor) ? null : int.TryParse(valor, out var gols) ? Math.Clamp(gols, 0, 30) : null;
+
+    private Task Notificar() => OnPlacarAlterado.InvokeAsync((Jogo.JogoId, _golsMandante, _golsVisitante));
+
+    private static string FlagUrl(string codigo) => $"https://api.fifa.com/api/v3/picture/flags-sq-4/{codigo}";
+}

@@ -1,0 +1,13 @@
+/* Mesmo layout de SimuladorGrupo.razor.css: jogos e classificação lado a lado, 1 coluna em telas estreitas. */
+.simulador-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .simulador-grid {
+        grid-template-columns: 1fr;
+    }
+}

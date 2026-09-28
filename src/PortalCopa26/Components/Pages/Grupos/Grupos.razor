@@ -1,0 +1,128 @@
+@page "/grupos"
+@rendermode InteractiveServer
+@using PortalCopa26.Services
+@inject IGruposService GruposService
+
+<PageTitle>Grupos — PortalCopa26</PageTitle>
+
+<div class="page">
+    <div class="page-header">
+        <h1>Grupos</h1>
+        <p>12 grupos · 48 seleções · Fase de grupos da Copa do Mundo FIFA 2026</p>
+    </div>
+
+    <div class="flex items-c gap-2 mb-3 fs-xs text-soft" style="flex-wrap:wrap">
+        <span class="flex items-c gap-1"><span style="width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block"></span> Classificado (1º e 2º)</span>
+        <span class="flex items-c gap-1"><span style="width:10px;height:10px;background:var(--gold);border-radius:2px;display:inline-block"></span> Possível wildcard (3º)</span>
+    </div>
+
+    <div class="group-tabs">
+        @foreach (var letra in _letrasGrupos)
+        {
+            <button class="gtab @(letra == _grupoAtivo ? "active" : "")" @onclick="() => SelecionarGrupoAsync(letra)">
+                Grupo @letra
+            </button>
+        }
+    </div>
+
+    @if (_dados is null)
+    {
+        <p class="text-soft">Carregando...</p>
+    }
+    else
+    {
+        @* Mesma disposição de SimuladorGrupo.razor: jogos à esquerda, classificação + seleções à direita. *@
+        <div class="simulador-grid">
+            <div class="sim-card">
+                <div class="sim-card-head">Grupo @_dados.Grupo — Jogos</div>
+                @foreach (var jogo in _dados.Jogos)
+                {
+                    <GrupoJogo @key="jogo.JogoId" Jogo="jogo" OnPlacarAlterado="OnPlacarAlteradoAsync" />
+                }
+            </div>
+
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Classificação — Grupo @_dados.Grupo</h3>
+                        <a href="/simulador?grupo=@_dados.Grupo" class="btn btn-outline btn-sm">Simular</a>
+                    </div>
+                    <ClassificacaoOficial Grupo="_dados.Grupo" Classificacao="_dados.Classificacao" />
+                </div>
+
+                <div class="card mt-2">
+                    <div class="card-header"><h3>Seleções do Grupo @_dados.Grupo</h3></div>
+                    <div class="card-body" style="padding:0.75rem">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+                            @foreach (var selecao in _dados.Selecoes)
+                            {
+                                <div style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem;background:var(--card-alt);border-radius:6px">
+                                    <img src="@FlagUrl(selecao.Codigo)" alt="@selecao.Nome" class="flag-xs" />
+                                    <div>
+                                        <div class="fs-sm fw-7">@selecao.Nome</div>
+                                        @if (selecao.RankingPosicao is not null)
+                                        {
+                                            <div class="fs-xs text-soft">Ranking #@selecao.RankingPosicao</div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private char[] _letrasGrupos = [];
+    private char _grupoAtivo = 'A';
+    private GrupoDados? _dados;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _letrasGrupos = (await GruposService.GetLetrasGruposAsync()).ToArray();
+        if (_letrasGrupos.Length > 0 && !_letrasGrupos.Contains(_grupoAtivo))
+        {
+            _grupoAtivo = _letrasGrupos[0];
+        }
+
+        await CarregarGrupoAsync();
+    }
+
+    private async Task CarregarGrupoAsync()
+    {
+        _dados = await GruposService.GetGrupoAsync(_grupoAtivo);
+    }
+
+    private async Task SelecionarGrupoAsync(char grupo)
+    {
+        _grupoAtivo = grupo;
+        await CarregarGrupoAsync();
+    }
+
+    private async Task OnPlacarAlteradoAsync((int JogoId, int? GolsMandante, int? GolsVisitante) placar)
+    {
+        if (placar.GolsMandante is int golsMandante && placar.GolsVisitante is int golsVisitante)
+        {
+            await GruposService.SalvarPlacarOficialAsync(placar.JogoId, golsMandante, golsVisitante);
+            await CarregarGrupoAsync();
+            return;
+        }
+
+        // Só um dos dois campos foi preenchido até agora (o usuário ainda está digitando o outro
+        // lado) — só limpamos/recarregamos se o jogo já tinha um placar oficial completo, senão
+        // recarregar aqui reatribuiria o jogo (ainda sem placar) e apagaria o dígito que acabou de
+        // ser digitado no outro campo antes mesmo do usuário terminar de preenchê-lo.
+        var jogoAtual = _dados?.Jogos.FirstOrDefault(j => j.JogoId == placar.JogoId);
+        var tinhaPlacarCompleto = jogoAtual is { GolsMandante: not null, GolsVisitante: not null };
+        if (tinhaPlacarCompleto)
+        {
+            await GruposService.LimparPlacarOficialAsync(placar.JogoId);
+            await CarregarGrupoAsync();
+        }
+    }
+
+    private static string FlagUrl(string codigo) => $"https://api.fifa.com/api/v3/picture/flags-sq-4/{codigo}";
+}

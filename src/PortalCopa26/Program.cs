@@ -14,6 +14,7 @@ builder.Services.AddPortalCopaData(builder.Configuration);
 builder.Services.AddLandingPageServices();
 builder.Services.AddJogosServices();
 builder.Services.AddSimuladorServices();
+builder.Services.AddGruposServices();
 
 var app = builder.Build();
 

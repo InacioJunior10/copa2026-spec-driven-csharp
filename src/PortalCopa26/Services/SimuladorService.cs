@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PortalCopa26.Data;
 using PortalCopa26.Domain.Entities;
 using PortalCopa26.Domain.Enums;
+using PortalCopa26.Services.Classificacao;
 
 namespace PortalCopa26.Services;
 
@@ -77,10 +78,7 @@ public class SimuladorService(IDbContextFactory<AppDbContext> dbContextFactory) 
 
     public async Task SalvarPlacarAsync(Guid visitanteId, int jogoId, int golsMandante, int golsVisitante)
     {
-        if (golsMandante is < 0 or > 30 || golsVisitante is < 0 or > 30)
-        {
-            throw new InvalidOperationException("Placar simulado deve estar entre 0 e 30.");
-        }
+        PlacarValidator.ValidarFaixa(golsMandante, golsVisitante);
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
@@ -187,80 +185,32 @@ public class SimuladorService(IDbContextFactory<AppDbContext> dbContextFactory) 
     // D2: replica calcStandingsSim do protótipo — pts -> saldo de gols -> gols marcados, sem outros critérios.
     private static List<ClassificacaoItem> CalcularClassificacao(List<Jogo> jogos, Dictionary<int, SimulacaoJogo> placares)
     {
-        var acumulados = new Dictionary<int, Acumulado>();
-
-        Acumulado ObterOuCriar(Selecao selecao)
-        {
-            if (!acumulados.TryGetValue(selecao.Id, out var acumulado))
-            {
-                acumulado = new Acumulado(selecao.Nome, selecao.Codigo);
-                acumulados[selecao.Id] = acumulado;
-            }
-            return acumulado;
-        }
-
+        var selecoesPorId = new Dictionary<int, Selecao>();
         foreach (var jogo in jogos)
         {
-            var mandante = ObterOuCriar(jogo.Mandante!);
-            var visitante = ObterOuCriar(jogo.Visitante!);
-
-            if (!placares.TryGetValue(jogo.Id, out var placar))
-            {
-                continue;
-            }
-
-            mandante.Jogos++;
-            visitante.Jogos++;
-            mandante.GolsPro += placar.GolsMandante;
-            mandante.GolsContra += placar.GolsVisitante;
-            visitante.GolsPro += placar.GolsVisitante;
-            visitante.GolsContra += placar.GolsMandante;
-
-            if (placar.GolsMandante > placar.GolsVisitante)
-            {
-                mandante.Vitorias++;
-                visitante.Derrotas++;
-            }
-            else if (placar.GolsMandante < placar.GolsVisitante)
-            {
-                visitante.Vitorias++;
-                mandante.Derrotas++;
-            }
-            else
-            {
-                mandante.Empates++;
-                visitante.Empates++;
-            }
+            selecoesPorId[jogo.Mandante!.Id] = jogo.Mandante!;
+            selecoesPorId[jogo.Visitante!.Id] = jogo.Visitante!;
         }
 
-        return acumulados.Values
-            .OrderByDescending(a => a.Pontos)
-            .ThenByDescending(a => a.SaldoGols)
-            .ThenByDescending(a => a.GolsPro)
-            .Select((a, i) => new ClassificacaoItem(
-                i + 1,
-                a.Nome,
-                a.Codigo,
-                a.Jogos,
-                a.Vitorias,
-                a.Empates,
-                a.Derrotas,
-                a.SaldoGols,
-                a.Pontos))
-            .ToList();
-    }
+        var acumulados = AcumuladorClassificacao.Acumular(
+            jogos,
+            jogo => placares.TryGetValue(jogo.Id, out var placar) ? (placar.GolsMandante, placar.GolsVisitante) : null);
 
-    private sealed class Acumulado(string nome, string codigo)
-    {
-        public string Nome { get; } = nome;
-        public string Codigo { get; } = codigo;
-        public int Jogos { get; set; }
-        public int Vitorias { get; set; }
-        public int Empates { get; set; }
-        public int Derrotas { get; set; }
-        public int GolsPro { get; set; }
-        public int GolsContra { get; set; }
-        public int SaldoGols => GolsPro - GolsContra;
-        public int Pontos => Vitorias * 3 + Empates;
+        return selecoesPorId.Values
+            .Select(selecao => (Selecao: selecao, Estatisticas: acumulados.GetValueOrDefault(selecao.Id) ?? new EstatisticasSelecao()))
+            .OrderByDescending(x => x.Estatisticas.Pontos)
+            .ThenByDescending(x => x.Estatisticas.SaldoGols)
+            .ThenByDescending(x => x.Estatisticas.GolsPro)
+            .Select((x, i) => new ClassificacaoItem(
+                i + 1,
+                x.Selecao.Nome,
+                x.Selecao.Codigo,
+                x.Estatisticas.Jogos,
+                x.Estatisticas.Vitorias,
+                x.Estatisticas.Empates,
+                x.Estatisticas.Derrotas,
+                x.Estatisticas.SaldoGols,
+                x.Estatisticas.Pontos))
+            .ToList();
     }
 }
